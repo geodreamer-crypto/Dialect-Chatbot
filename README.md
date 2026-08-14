@@ -1,53 +1,79 @@
-# 사투리 번역 챗봇 (Gemini UI Clone)
+# Gemini 사투리 봇 프로젝트
 
-이 프로젝트는 표준어를 다양한 지역(강원, 북한, 전라, 경상, 제주) 사투리로 번역해 주고 음성으로 읽어주는 챗봇 서비스입니다.
-유려한 다크모드 UI와 함께 **React(Vite) + FastAPI + Supabase(PostgreSQL)** 풀스택 환경으로 구성되어 있습니다.
+이 프로젝트는 표준어를 구수한 지역 사투리로 번역해 주고, 이를 음성(TTS)으로 들려주는 웹 어플리케이션입니다.
 
-## 🚀 기술 스택
-- **Frontend**: React, Vite, CSS (Dark Mode), Lucide Icons
-- **Backend**: Python, FastAPI, Uvicorn
-- **Database**: Supabase (PostgreSQL)
+## 🌟 주요 기능
+- 🗺️ 5가지 사투리 번역 지원 (강원도, 경상도, 전라도, 제주도, 북한)
+- 🎙️ 번역된 사투리를 생생한 억양의 음성(TTS)으로 재생
+- 💾 Supabase 연동을 통한 대화 기록 실시간 저장 및 불러오기
 
 ---
 
-## 💻 실행 방법 (로컬 개발 환경)
+## 🏗️ 전체 아키텍처 및 폴더 구조 (Refactored)
 
-본 어플리케이션을 구동하기 위해서는 **백엔드 서버**와 **프론트엔드 서버**를 각각 실행해야 합니다. (VScode나 터미널 창을 2개 열어주세요.)
+이 프로젝트는 유지보수성과 확장성을 위해 프론트엔드와 백엔드를 물리적으로 분리하였으며, 각각 최신 아키텍처 패턴을 도입하여 재구성되었습니다.
 
-### 1. 백엔드(FastAPI) 실행하기
-파이썬(Python)이 설치되어 있어야 합니다. 첫 번째 터미널에서 아래 명령어를 순서대로 입력하세요.
+### 1. 프론트엔드 (FSD 아키텍처)
+프론트엔드 코드(`frontend/`)는 **Feature-Sliced Design (FSD)** 방법론을 도입하여 6개의 명확한 레이어로 분리되었습니다.
 
-```bash
-# 1. 백엔드 폴더로 이동
-cd backend
-
-# 2. 파이썬 필수 패키지 설치
-pip install -r requirements.txt
-
-# 3. FastAPI 서버 실행
-uvicorn main:app --reload
+```text
+jemini/frontend/
+ ├── src/
+ │    ├── app/       (전역 설정, 라우팅, 글로벌 스타일)
+ │    ├── pages/     (MainPage 등 전체 화면 레이아웃)
+ │    ├── widgets/   (Sidebar, ChatWindow 등 기능의 조합)
+ │    ├── features/  (ChatInput, PlayTTS 등 사용자와 상호작용하는 구체적 기능)
+ │    ├── entities/  (Chat, Message 등 비즈니스 도메인 데이터 모델 및 UI)
+ │    └── shared/    (공통 API 설정, 유틸리티, 아이콘)
+ ├── package.json
+ └── vite.config.js
 ```
-> 정상적으로 실행되면 `http://127.0.0.1:8000` 에서 백엔드 서버가 대기합니다.
 
-### 2. 프론트엔드(React) 실행하기
-Node.js가 설치되어 있어야 합니다. 새로운 터미널 탭을 열고 아래 명령어를 입력하세요.
+### 2. 백엔드 (클린 아키텍처 & TDD)
+백엔드 코드(`backend/`)는 외부 기술(FastAPI, Supabase, Gemini)과 비즈니스 로직을 분리하는 **클린 아키텍처(Clean Architecture)**를 도입하였으며, **TDD(테스트 주도 개발)** 기반으로 작성되었습니다.
 
+```text
+jemini/backend/
+ ├── app/
+ │    ├── domain/           (데이터 모델 및 엔티티 정의)
+ │    ├── application/      (순수 비즈니스 로직 Use Case 및 인터페이스 명세)
+ │    ├── infrastructure/   (Supabase, Gemini 등 실제 외부 서비스 연동 구현체)
+ │    └── presentation/     (FastAPI 라우터 엔드포인트)
+ ├── tests/
+ │    └── unit/             (Mock 객체를 활용한 비즈니스 로직 TDD 단위 테스트)
+ ├── main.py                (FastAPI 실행 및 모든 의존성 주입 조립)
+ └── requirements.txt
+```
+
+---
+
+## 🚀 실행 방법
+
+이 프로젝트는 프론트엔드(React/Vite)와 백엔드(FastAPI) 두 개의 서버를 동시에 실행해야 합니다.
+
+### 1. 백엔드 실행 (FastAPI)
+새 터미널을 열고 다음을 입력합니다.
 ```bash
-# 1. 프로젝트 최상단 폴더(jemini)에서 시작
-# (만약 backend 폴더 안에 있다면 cd .. 명령어로 상위 폴더로 이동)
+cd backend
+pip install -r requirements.txt
+# .env 파일에 SUPABASE_URL, SUPABASE_KEY, GEMINI_API_KEY 설정 필수
+uvicorn main:app --reload --port 8000
+```
+> 단위 테스트 실행: `python -m pytest tests/unit`
+> **서버 주소**: http://localhost:8000 (API 문서: http://localhost:8000/docs)
 
-# 2. 패키지 설치 (최초 1회만)
+### 2. 프론트엔드 실행 (React/Vite)
+다른 새 터미널을 열고 다음을 입력합니다.
+```bash
+cd frontend
 npm install
-
-# 3. 프론트엔드 개발 서버 실행
 npm run dev
 ```
-> 터미널에 출력된 `http://localhost:5173` 등의 링크를 **Ctrl + 클릭**하여 브라우저에서 챗봇을 열어주세요!
+> **앱 접속 주소**: http://localhost:5173
 
 ---
 
-## 🛠 실무 연동 포인트 (추후 개발 가이드)
-현재 통신 로직은 모두 완성되어 있으나, 외부 유료 API 연결을 위해 딜레이(Mock) 응답 코드가 들어가 있습니다. 
-실제 상용화를 원하실 경우 `backend/main.py` 파일을 열어 다음 부분을 수정하세요.
-1. `process_chat` 함수 내부: Gemini/OpenAI API 연동 코드 추가
-2. `process_tts` 함수 내부: 사투리 지원 TTS (네이버 Clova Voice 등) 연동 코드 추가
+## 🛠️ 기술 스택
+- **Frontend**: React, Vite, CSS(vanilla), Lucide-React
+- **Backend**: Python, FastAPI, Pytest
+- **Database / API**: Supabase (PostgreSQL), Google Gemini 3.5 Flash
