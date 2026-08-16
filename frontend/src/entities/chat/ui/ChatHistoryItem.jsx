@@ -1,4 +1,4 @@
-import { MessageSquare } from 'lucide-react';
+import { Folder } from 'lucide-react';
 
 export const ChatHistoryItem = ({ chat, isActive, onClick }) => {
   return (
@@ -6,8 +6,8 @@ export const ChatHistoryItem = ({ chat, isActive, onClick }) => {
       className={`history-item ${isActive ? 'active' : ''}`}
       onClick={() => onClick(chat)}
     >
-      <MessageSquare size={16} />
-      <span>{chat.title}</span>
+      <Folder size={16} style={{ flexShrink: 0 }} />
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{chat.title}</span>
     </div>
   );
 };

@@ -9,6 +9,8 @@ export const ChatWindow = ({
   setInputText,
   selectedRegion,
   setSelectedRegion,
+  selectedImage,
+  setSelectedImage,
   handleSend
 }) => {
   return (
@@ -25,6 +27,8 @@ export const ChatWindow = ({
             setInputText={setInputText}
             selectedRegion={selectedRegion}
             setSelectedRegion={setSelectedRegion}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
             handleSend={handleSend}
           />
         </div>
@@ -49,6 +53,8 @@ export const ChatWindow = ({
             setInputText={setInputText}
             selectedRegion={selectedRegion}
             setSelectedRegion={setSelectedRegion}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
             handleSend={handleSend}
           />
         </>

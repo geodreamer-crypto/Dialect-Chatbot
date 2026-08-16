@@ -29,5 +29,5 @@ class IMessageRepository(ABC):
 
 class ILLMService(ABC):
     @abstractmethod
-    async def translate(self, text: str, region: str) -> str:
+    async def translate(self, text: str, region: str, image_base64: Optional[str] = None) -> str:
         pass

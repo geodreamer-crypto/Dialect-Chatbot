@@ -6,9 +6,10 @@ class ProcessChatUseCase:
         self.msg_repo = msg_repo
         self.llm_service = llm_service
 
-    async def execute(self, chat_id: int, text: str, region: str) -> dict:
+    async def execute(self, chat_id: int, text: str, region: str, image_base64: str = None) -> dict:
         # 1. 사용자 메시지 저장
-        await self.msg_repo.save_message(chat_id, "user", text, region)
+        content_to_save = f"[이미지 첨부됨] {text}" if image_base64 else text
+        await self.msg_repo.save_message(chat_id, "user", content_to_save, region)
 
         # 2. 채팅방 제목 업데이트 (기본 제목인 경우 사용자의 첫 메시지로 변경)
         current_title = await self.chat_repo.get_chat_title(chat_id)
@@ -19,7 +20,7 @@ class ProcessChatUseCase:
             await self.chat_repo.update_chat_title(chat_id, new_title)
 
         # 3. LLM 번역 처리
-        bot_response = await self.llm_service.translate(text, region)
+        bot_response = await self.llm_service.translate(text, region, image_base64)
 
         # 4. 챗봇 메시지 저장
         bot_msg = await self.msg_repo.save_message(chat_id, "bot", bot_response, region)

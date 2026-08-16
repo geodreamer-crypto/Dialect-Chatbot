@@ -9,6 +9,7 @@ export const MainPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [inputText, setInputText] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('경상도');
+  const [selectedImage, setSelectedImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(1);
@@ -35,11 +36,7 @@ export const MainPage = () => {
 
   const handleNewChat = async () => {
     setMessages([]);
-    const newChat = await createChat("새로운 사투리 번역");
-    if (newChat) {
-      setCurrentChatId(newChat.id);
-      setHistory(prev => [newChat, ...prev]);
-    }
+    setCurrentChatId(null);
   };
 
   const loadChat = async (chat) => {
@@ -49,17 +46,36 @@ export const MainPage = () => {
   };
 
   const handleSend = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() && !selectedImage) return;
     
-    const newUserMsg = { id: Date.now(), role: 'user', content: inputText };
+    const contentText = selectedImage ? `[이미지 첨부됨] ${inputText}` : inputText;
+    const newUserMsg = { id: Date.now(), role: 'user', content: contentText };
     setMessages(prev => [...prev, newUserMsg]);
+    
+    const imageToSend = selectedImage;
     setInputText('');
+    setSelectedImage(null);
+
+    let targetChatId = currentChatId;
+    if (!targetChatId) {
+      const newChat = await createChat(inputText.substring(0, 20) || "새로운 사투리 번역");
+      if (newChat) {
+        targetChatId = newChat.id;
+        setCurrentChatId(targetChatId);
+        setHistory(prev => [newChat, ...prev]);
+      }
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId: currentChatId, text: inputText, region: selectedRegion })
+        body: JSON.stringify({ 
+          chatId: targetChatId, 
+          text: inputText, 
+          region: selectedRegion,
+          image_base64: imageToSend
+        })
       });
       const data = await response.json();
       const mockResponse = data.content;
@@ -94,7 +110,7 @@ export const MainPage = () => {
       <div className="main-content">
         <div className="header">
           <div className="header-title">
-            <span>Gemini </span>
+            <span>Jemini </span>
             <span style={{color: 'var(--text-primary)', fontSize: '16px', fontWeight: '400'}}>사투리 봇</span>
           </div>
         </div>
@@ -105,6 +121,8 @@ export const MainPage = () => {
           setInputText={setInputText}
           selectedRegion={selectedRegion}
           setSelectedRegion={setSelectedRegion}
+          selectedImage={selectedImage}
+          setSelectedImage={setSelectedImage}
           handleSend={handleSend}
         />
       </div>

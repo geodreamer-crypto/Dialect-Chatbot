@@ -1,14 +1,84 @@
-import { Image as ImageIcon, Mic, Send } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Image as ImageIcon, Mic, Send, X } from 'lucide-react';
 
 export const ChatInput = ({ 
   inputText, 
   setInputText, 
   selectedRegion, 
-  setSelectedRegion, 
+  setSelectedRegion,
+  selectedImage,
+  setSelectedImage,
   handleSend 
 }) => {
+  const [isRecording, setIsRecording] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleMicClick = () => {
+    if (isRecording) return; // Prevent multiple starts
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("현재 브라우저는 음성 인식을 지원하지 않습니다.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ko-KR';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInputText(prev => prev ? `${prev} ${transcript}` : transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.start();
+  };
+
   return (
     <div className="input-container">
+      {selectedImage && (
+        <div className="image-preview" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-input)', padding: '8px', borderRadius: '12px', width: 'fit-content' }}>
+          <img src={selectedImage} alt="Preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} />
+          <button onClick={removeImage} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex' }}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
       <div className="input-box">
         <select 
           className="region-select"
@@ -25,7 +95,7 @@ export const ChatInput = ({
         <input 
           type="text" 
           className="input-field" 
-          placeholder="여기에 표준어를 입력해주세요..."
+          placeholder={isRecording ? "듣고 있습니다..." : "여기에 표준어를 입력해주세요..."}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={(e) => {
@@ -33,17 +103,25 @@ export const ChatInput = ({
           }}
         />
         
+        <input 
+          type="file" 
+          accept="image/*" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          onChange={handleFileChange} 
+        />
+
         <div className="input-actions">
-          <button className="icon-btn">
+          <button className="icon-btn" onClick={handleImageClick}>
             <ImageIcon size={20} />
           </button>
-          <button className="icon-btn">
+          <button className={`icon-btn ${isRecording ? 'recording' : ''}`} onClick={handleMicClick} style={isRecording ? { color: '#d96570' } : {}}>
             <Mic size={20} />
           </button>
           <button 
-            className={`icon-btn send ${!inputText.trim() ? 'disabled' : ''}`}
+            className={`icon-btn send ${(!inputText.trim() && !selectedImage) ? 'disabled' : ''}`}
             onClick={handleSend}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() && !selectedImage}
           >
             <Send size={20} />
           </button>

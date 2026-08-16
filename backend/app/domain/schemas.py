@@ -5,6 +5,7 @@ class ChatRequest(BaseModel):
     chatId: int
     text: str
     region: str
+    image_base64: Optional[str] = None
 
 class ChatCreateRequest(BaseModel):
     title: str
