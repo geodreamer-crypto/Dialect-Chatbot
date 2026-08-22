@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from app.presentation.routers.api import router, get_chat_repo, get_message_repo, get_llm_service
 from app.infrastructure.supabase_repo import SupabaseChatRepository, SupabaseMessageRepository
-from app.infrastructure.gemini_api import GeminiService
+from app.infrastructure.langchain_service import LangChainService
 
 load_dotenv()
 
@@ -24,12 +24,16 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "google_genai")
+DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gemini-3.6-flash")
 
-# 2. 구현체 초기화
+# 2. 구현체 초기화 (LangChain 기반 다중 벤더 지원 서비스)
 chat_repo = SupabaseChatRepository(supabase)
 msg_repo = SupabaseMessageRepository(supabase)
-llm_service = GeminiService(GEMINI_API_KEY)
+llm_service = LangChainService(
+    default_provider=DEFAULT_LLM_PROVIDER,
+    default_model=DEFAULT_LLM_MODEL
+)
 
 # 3. FastAPI Dependency Injection 재정의 (의존성 조립)
 app.dependency_overrides[get_chat_repo] = lambda: chat_repo

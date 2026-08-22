@@ -1,7 +1,7 @@
 import { Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-export const MessageBubble = ({ msg, actionSlot }) => {
+export const MessageBubble = ({ msg, actionSlot, suggestedQuestionsSlot }) => {
   return (
     <div className={`message-row ${msg.role}`}>
       {msg.role === 'bot' && (
@@ -20,6 +20,7 @@ export const MessageBubble = ({ msg, actionSlot }) => {
               </ReactMarkdown>
             </div>
             {actionSlot && <div className="action-row">{actionSlot}</div>}
+            {suggestedQuestionsSlot && suggestedQuestionsSlot}
           </div>
         )}
       </div>

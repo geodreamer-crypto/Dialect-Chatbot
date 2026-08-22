@@ -4,3 +4,10 @@ supabase
 pydantic
 python-dotenv
 google-genai
+langchain
+langchain-core
+langchain-google-genai
+langchain-openai
+langchain-anthropic
+pytest
+pytest-asyncio

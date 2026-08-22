@@ -43,7 +43,14 @@ async def process_chat_endpoint(
     use_case: ProcessChatUseCase = Depends(get_process_chat_use_case)
 ):
     try:
-        return await use_case.execute(request.chatId, request.text, request.region, request.image_base64)
+        return await use_case.execute(
+            chat_id=request.chatId,
+            text=request.text,
+            region=request.region,
+            image_base64=request.image_base64,
+            provider=request.provider,
+            model=request.model
+        )
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Error processing chat")

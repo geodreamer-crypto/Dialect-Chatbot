@@ -1,6 +1,7 @@
 import { MessageBubble } from '../../../entities/message/ui/MessageBubble';
 import { PlayTTSButton } from '../../../features/play-tts/ui/PlayTTSButton';
 import { ChatInput } from '../../../features/chat-input/ui/ChatInput';
+import { SuggestedQuestions } from '../../../features/suggested-questions/ui/SuggestedQuestions';
 
 export const ChatWindow = ({
   messages,
@@ -11,7 +12,8 @@ export const ChatWindow = ({
   setSelectedRegion,
   selectedImage,
   setSelectedImage,
-  handleSend
+  handleSend,
+  isLoading
 }) => {
   return (
     <>
@@ -30,12 +32,13 @@ export const ChatWindow = ({
             selectedImage={selectedImage}
             setSelectedImage={setSelectedImage}
             handleSend={handleSend}
+            isLoading={isLoading}
           />
         </div>
       ) : (
         <>
           <div className="chat-area">
-            {messages.map(msg => (
+            {messages.map((msg, index) => (
               <MessageBubble 
                 key={msg.id} 
                 msg={msg} 
@@ -44,8 +47,24 @@ export const ChatWindow = ({
                     <PlayTTSButton content={msg.content} region={msg.region} />
                   )
                 }
+                suggestedQuestionsSlot={
+                  index === messages.length - 1 && msg.role === 'bot' && msg.suggested_questions?.length > 0 ? (
+                    <SuggestedQuestions
+                      questions={msg.suggested_questions}
+                      onSelectQuestion={(question) => handleSend(question)}
+                      disabled={isLoading}
+                    />
+                  ) : null
+                }
               />
             ))}
+            {isLoading && (
+              <div className="message-wrapper bot" style={{ display: 'flex', gap: '12px', alignItems: 'center', opacity: 0.8 }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                  사투리로 번역 중입니다... 💬
+                </div>
+              </div>
+            )}
             <div ref={chatEndRef} />
           </div>
           <ChatInput 
@@ -56,6 +75,7 @@ export const ChatWindow = ({
             selectedImage={selectedImage}
             setSelectedImage={setSelectedImage}
             handleSend={handleSend}
+            isLoading={isLoading}
           />
         </>
       )}

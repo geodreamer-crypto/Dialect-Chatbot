@@ -8,12 +8,14 @@ export const ChatInput = ({
   setSelectedRegion,
   selectedImage,
   setSelectedImage,
-  handleSend 
+  handleSend,
+  isLoading 
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageClick = () => {
+    if (isLoading) return;
     fileInputRef.current?.click();
   };
 
@@ -36,7 +38,7 @@ export const ChatInput = ({
   };
 
   const handleMicClick = () => {
-    if (isRecording) return; // Prevent multiple starts
+    if (isLoading || isRecording) return; // Prevent multiple starts
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -84,6 +86,7 @@ export const ChatInput = ({
           className="region-select"
           value={selectedRegion}
           onChange={(e) => setSelectedRegion(e.target.value)}
+          disabled={isLoading}
         >
           <option value="강원도">강원도</option>
           <option value="북한">북한</option>
@@ -95,11 +98,12 @@ export const ChatInput = ({
         <input 
           type="text" 
           className="input-field" 
-          placeholder={isRecording ? "듣고 있습니다..." : "여기에 표준어를 입력해주세요..."}
+          placeholder={isLoading ? "사투리로 번역하는 중입니다..." : isRecording ? "듣고 있습니다..." : "여기에 표준어를 입력해주세요..."}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
+          disabled={isLoading}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSend();
+            if (e.key === 'Enter' && !isLoading) handleSend();
           }}
         />
         
@@ -112,16 +116,16 @@ export const ChatInput = ({
         />
 
         <div className="input-actions">
-          <button className="icon-btn" onClick={handleImageClick}>
+          <button className="icon-btn" onClick={handleImageClick} disabled={isLoading}>
             <ImageIcon size={20} />
           </button>
-          <button className={`icon-btn ${isRecording ? 'recording' : ''}`} onClick={handleMicClick} style={isRecording ? { color: '#d96570' } : {}}>
+          <button className={`icon-btn ${isRecording ? 'recording' : ''}`} onClick={handleMicClick} style={isRecording ? { color: '#d96570' } : {}} disabled={isLoading}>
             <Mic size={20} />
           </button>
           <button 
-            className={`icon-btn send ${(!inputText.trim() && !selectedImage) ? 'disabled' : ''}`}
+            className={`icon-btn send ${((!inputText.trim() && !selectedImage) || isLoading) ? 'disabled' : ''}`}
             onClick={handleSend}
-            disabled={!inputText.trim() && !selectedImage}
+            disabled={(!inputText.trim() && !selectedImage) || isLoading}
           >
             <Send size={20} />
           </button>

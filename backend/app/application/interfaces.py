@@ -29,5 +29,16 @@ class IMessageRepository(ABC):
 
 class ILLMService(ABC):
     @abstractmethod
-    async def translate(self, text: str, region: str, image_base64: Optional[str] = None) -> str:
+    async def translate(
+        self,
+        text: str,
+        region: str,
+        image_base64: Optional[str] = None,
+        provider: Optional[str] = None,
+        model: Optional[str] = None
+    ) -> dict:
+        """
+        사투리 번역 및 후속 질문 생성
+        반환값: {"content": str, "suggested_questions": List[str]}
+        """
         pass

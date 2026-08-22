@@ -6,7 +6,15 @@ class ProcessChatUseCase:
         self.msg_repo = msg_repo
         self.llm_service = llm_service
 
-    async def execute(self, chat_id: int, text: str, region: str, image_base64: str = None) -> dict:
+    async def execute(
+        self,
+        chat_id: int,
+        text: str,
+        region: str,
+        image_base64: str = None,
+        provider: str = None,
+        model: str = None
+    ) -> dict:
         # 1. 사용자 메시지 저장
         content_to_save = f"[이미지 첨부됨] {text}" if image_base64 else text
         await self.msg_repo.save_message(chat_id, "user", content_to_save, region)
@@ -19,10 +27,24 @@ class ProcessChatUseCase:
                 new_title += "..."
             await self.chat_repo.update_chat_title(chat_id, new_title)
 
-        # 3. LLM 번역 처리
-        bot_response = await self.llm_service.translate(text, region, image_base64)
+        # 3. LLM 번역 및 추천 질문 생성 처리 (다중 벤더 지원)
+        llm_result = await self.llm_service.translate(
+            text=text,
+            region=region,
+            image_base64=image_base64,
+            provider=provider,
+            model=model
+        )
+        if isinstance(llm_result, dict):
+            bot_content = llm_result.get("content", "")
+            suggested_questions = llm_result.get("suggested_questions", [])
+        else:
+            bot_content = str(llm_result)
+            suggested_questions = []
 
-        # 4. 챗봇 메시지 저장
-        bot_msg = await self.msg_repo.save_message(chat_id, "bot", bot_response, region)
+        # 4. 챗봇 메시지 저장 (본문만 DB에 저장)
+        bot_msg = await self.msg_repo.save_message(chat_id, "bot", bot_content, region)
         
+        # 5. 프론트엔드 반환용 추천 질문 필드 결합
+        bot_msg["suggested_questions"] = suggested_questions
         return bot_msg

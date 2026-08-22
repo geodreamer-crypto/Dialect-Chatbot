@@ -12,19 +12,22 @@ export const MainPage = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
-  const [currentChatId, setCurrentChatId] = useState(1);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
     const loadHistory = async () => {
       const data = await fetchHistory();
-      if (Array.isArray(data)) {
+      if (Array.isArray(data) && data.length > 0) {
         setHistory(data);
-        if (data.length > 0) {
-          setCurrentChatId(data[0].id);
-          const msgs = await fetchMessages(data[0].id);
-          setMessages(msgs || []);
-        }
+        setCurrentChatId(data[0].id);
+        const msgs = await fetchMessages(data[0].id);
+        setMessages(msgs || []);
+      } else {
+        setHistory([]);
+        setCurrentChatId(null);
+        setMessages([]);
       }
     };
     loadHistory();
@@ -32,37 +35,57 @@ export const MainPage = () => {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, isLoading]);
 
-  const handleNewChat = async () => {
+  const handleNewChat = () => {
     setMessages([]);
     setCurrentChatId(null);
+    setInputText('');
+    setSelectedImage(null);
   };
 
   const loadChat = async (chat) => {
+    if (!chat || !chat.id) return;
     setCurrentChatId(chat.id);
     const msgs = await fetchMessages(chat.id);
     setMessages(msgs || []);
   };
 
-  const handleSend = async () => {
-    if (!inputText.trim() && !selectedImage) return;
+  const handleSend = async (overrideText = null) => {
+    const userText = typeof overrideText === 'string' ? overrideText.trim() : inputText.trim();
+    if ((!userText && !selectedImage) || isLoading) return;
     
-    const contentText = selectedImage ? `[이미지 첨부됨] ${inputText}` : inputText;
+    const contentText = (selectedImage && !overrideText) ? `[이미지 첨부됨] ${userText}` : userText;
     const newUserMsg = { id: Date.now(), role: 'user', content: contentText };
     setMessages(prev => [...prev, newUserMsg]);
     
-    const imageToSend = selectedImage;
+    const imageToSend = overrideText ? null : selectedImage;
     setInputText('');
     setSelectedImage(null);
+    setIsLoading(true);
 
     let targetChatId = currentChatId;
     if (!targetChatId) {
-      const newChat = await createChat(inputText.substring(0, 20) || "새로운 사투리 번역");
-      if (newChat) {
-        targetChatId = newChat.id;
-        setCurrentChatId(targetChatId);
-        setHistory(prev => [newChat, ...prev]);
+      try {
+        const titleText = userText.substring(0, 20) || "새로운 사투리 번역";
+        const newChat = await createChat(titleText);
+        if (newChat && newChat.id) {
+          targetChatId = newChat.id;
+          setCurrentChatId(targetChatId);
+          setHistory(prev => [newChat, ...prev.filter(c => c.id !== newChat.id)]);
+        } else {
+          throw new Error("채팅방 생성 실패");
+        }
+      } catch (err) {
+        console.error("Failed to create chat:", err);
+        setMessages(prev => [...prev, { 
+          id: Date.now() + 1, 
+          role: 'bot', 
+          content: "⚠️ 채팅방을 생성하지 못했습니다. 백엔드 서버 연결을 확인해주세요.", 
+          region: selectedRegion 
+        }]);
+        setIsLoading(false);
+        return;
       }
     }
 
@@ -72,19 +95,26 @@ export const MainPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           chatId: targetChatId, 
-          text: inputText, 
+          text: userText, 
           region: selectedRegion,
           image_base64: imageToSend
         })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      const mockResponse = data.content;
+      const botResponse = data.content || "응답을 받지 못했습니다.";
+      const suggestedQuestions = Array.isArray(data.suggested_questions) ? data.suggested_questions : [];
 
       const newBotMsg = { 
-        id: Date.now() + 1, 
+        id: data.id || Date.now() + 1, 
         role: 'bot', 
-        content: mockResponse || "응답을 받지 못했습니다. 백엔드 서버 상태를 확인해주세요.", 
-        region: selectedRegion 
+        content: botResponse, 
+        region: selectedRegion,
+        suggested_questions: suggestedQuestions
       };
       setMessages(prev => [...prev, newBotMsg]);
       
@@ -93,7 +123,15 @@ export const MainPage = () => {
         setHistory(updatedHistory);
       }
     } catch (e) {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'bot', content: "에러가 발생했습니다.", region: selectedRegion }]);
+      console.error("Chat API error:", e);
+      setMessages(prev => [...prev, { 
+        id: Date.now() + 1, 
+        role: 'bot', 
+        content: "⚠️ 서버 통신에 실패했습니다. 백엔드 서버(FastAPI)가 실행 중인지 확인해주세요.", 
+        region: selectedRegion 
+      }]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -124,6 +162,7 @@ export const MainPage = () => {
           selectedImage={selectedImage}
           setSelectedImage={setSelectedImage}
           handleSend={handleSend}
+          isLoading={isLoading}
         />
       </div>
     </div>
