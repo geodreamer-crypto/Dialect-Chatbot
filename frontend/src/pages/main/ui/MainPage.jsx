@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sidebar } from '../../../widgets/sidebar/ui/Sidebar';
 import { ChatWindow } from '../../../widgets/chat-window/ui/ChatWindow';
+import { ModelSelector } from '../../../features/model-selector/ui/ModelSelector';
+import { AVAILABLE_MODELS } from '../../../features/model-selector/model/models';
 import { fetchHistory, createChat } from '../../../entities/chat/api/chatApi';
 import { fetchMessages } from '../../../entities/message/api/messageApi';
 import { API_BASE_URL } from '../../../shared/api/config';
@@ -9,6 +11,7 @@ export const MainPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [inputText, setInputText] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('경상도');
+  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[0]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
@@ -97,7 +100,9 @@ export const MainPage = () => {
           chatId: targetChatId, 
           text: userText, 
           region: selectedRegion,
-          image_base64: imageToSend
+          image_base64: imageToSend,
+          provider: selectedModel?.provider,
+          model: selectedModel?.model
         })
       });
 
@@ -151,6 +156,11 @@ export const MainPage = () => {
             <span>Jemini </span>
             <span style={{color: 'var(--text-primary)', fontSize: '16px', fontWeight: '400'}}>사투리 봇</span>
           </div>
+          <ModelSelector 
+            selectedModelId={selectedModel.id}
+            onSelectModel={setSelectedModel}
+            disabled={isLoading}
+          />
         </div>
         <ChatWindow 
           messages={messages}

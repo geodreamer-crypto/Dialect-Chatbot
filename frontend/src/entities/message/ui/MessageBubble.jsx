@@ -20,7 +20,7 @@ export const MessageBubble = ({ msg, actionSlot, suggestedQuestionsSlot }) => {
               </ReactMarkdown>
             </div>
             {actionSlot && <div className="action-row">{actionSlot}</div>}
-            {suggestedQuestionsSlot && suggestedQuestionsSlot}
+            {suggestedQuestionsSlot}
           </div>
         )}
       </div>

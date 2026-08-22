@@ -75,5 +75,5 @@ npm run dev
 
 ## 🛠️ 기술 스택
 - **Frontend**: React, Vite, CSS(vanilla), Lucide-React
-- **Backend**: Python, FastAPI, Pytest
-- **Database / API**: Supabase (PostgreSQL), Google Gemini 3.5 Flash
+- **Backend**: Python, FastAPI, LangChain, Pytest
+- **Database / LLM**: Supabase (PostgreSQL), LangChain Multi-Vendor (Google Gemini 3.6 Flash, OpenAI, Anthropic, Ollama 등)
