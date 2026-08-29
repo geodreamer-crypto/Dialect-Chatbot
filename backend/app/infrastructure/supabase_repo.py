@@ -25,6 +25,15 @@ class SupabaseChatRepository(IChatRepository):
     async def update_chat_title(self, chat_id: int, title: str) -> None:
         self.supabase.table("chats").update({"title": title}).eq("id", chat_id).execute()
 
+    async def delete_chat(self, chat_id: int) -> bool:
+        """
+        대화방을 삭제합니다. 외래 키 제약 조건 및 데이터 정합성을 위해 
+        해당 대화방에 속한 messages를 먼저 삭제한 후 chats 테이블의 대화방을 삭제합니다.
+        """
+        self.supabase.table("messages").delete().eq("chat_id", chat_id).execute()
+        response = self.supabase.table("chats").delete().eq("id", chat_id).execute()
+        return bool(response.data)
+
 class SupabaseMessageRepository(IMessageRepository):
     def __init__(self, supabase: Client):
         self.supabase = supabase

@@ -8,7 +8,8 @@ export const Sidebar = ({
   handleNewChat, 
   history, 
   currentChatId, 
-  loadChat 
+  loadChat,
+  onDeleteChat
 }) => {
   return (
     <div className={`sidebar ${isSidebarOpen ? '' : 'collapsed'}`}>
@@ -27,7 +28,8 @@ export const Sidebar = ({
             key={chat.id} 
             chat={chat} 
             isActive={currentChatId === chat.id} 
-            onClick={loadChat} 
+            onClick={loadChat}
+            onDelete={onDeleteChat}
           />
         ))}
       </div>

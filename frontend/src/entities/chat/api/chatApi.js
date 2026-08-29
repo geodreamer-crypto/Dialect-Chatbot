@@ -23,3 +23,16 @@ export const createChat = async (title) => {
     return null;
   }
 };
+
+export const deleteChat = async (chatId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
+      method: 'DELETE'
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting chat:", error);
+    return null;
+  }
+};
+

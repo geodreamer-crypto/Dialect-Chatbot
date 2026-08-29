@@ -3,7 +3,7 @@ import { Sidebar } from '../../../widgets/sidebar/ui/Sidebar';
 import { ChatWindow } from '../../../widgets/chat-window/ui/ChatWindow';
 import { ModelSelector } from '../../../features/model-selector/ui/ModelSelector';
 import { AVAILABLE_MODELS } from '../../../features/model-selector/model/models';
-import { fetchHistory, createChat } from '../../../entities/chat/api/chatApi';
+import { fetchHistory, createChat, deleteChat } from '../../../entities/chat/api/chatApi';
 import { fetchMessages } from '../../../entities/message/api/messageApi';
 import { API_BASE_URL } from '../../../shared/api/config';
 
@@ -52,6 +52,20 @@ export const MainPage = () => {
     setCurrentChatId(chat.id);
     const msgs = await fetchMessages(chat.id);
     setMessages(msgs || []);
+  };
+
+  const handleDeleteChat = async (chatId) => {
+    try {
+      const res = await deleteChat(chatId);
+      if (res && res.success !== false) {
+        setHistory(prev => prev.filter(c => c.id !== chatId));
+        if (currentChatId === chatId) {
+          handleNewChat();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete chat:", err);
+    }
   };
 
   const handleSend = async (overrideText = null) => {
@@ -149,6 +163,7 @@ export const MainPage = () => {
         history={history}
         currentChatId={currentChatId}
         loadChat={loadChat}
+        onDeleteChat={handleDeleteChat}
       />
       <div className="main-content">
         <div className="header">

@@ -18,6 +18,13 @@ class IChatRepository(ABC):
     async def update_chat_title(self, chat_id: int, title: str) -> None:
         pass
 
+    @abstractmethod
+    async def delete_chat(self, chat_id: int) -> bool:
+        """
+        대화방 및 연관된 메시지를 삭제합니다.
+        """
+        pass
+
 class IMessageRepository(ABC):
     @abstractmethod
     async def get_messages(self, chat_id: int) -> List[dict]:

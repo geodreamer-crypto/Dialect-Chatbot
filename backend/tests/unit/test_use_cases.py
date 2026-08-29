@@ -19,6 +19,12 @@ class MockChatRepo(IChatRepository):
     async def update_chat_title(self, chat_id: int, title: str) -> None:
         self.chats[chat_id] = title
 
+    async def delete_chat(self, chat_id: int) -> bool:
+        if chat_id in self.chats:
+            del self.chats[chat_id]
+            return True
+        return False
+
 class MockMessageRepo(IMessageRepository):
     def __init__(self):
         self.messages = []
