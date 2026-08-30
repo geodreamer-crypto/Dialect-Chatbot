@@ -4,7 +4,7 @@ services:
   # ==========================================
   - type: web
     name: jemini-backend
-    runtime: python
+    env: python
     region: singapore
     plan: free
     rootDir: backend
@@ -29,9 +29,8 @@ services:
   # ==========================================
   # 2. 프론트엔드 정적 호스팅 (React Vite Static Site)
   # ==========================================
-  - type: web
+  - type: static
     name: jemini-frontend
-    runtime: static
     region: singapore
     rootDir: frontend
     buildCommand: npm install && npm run build
