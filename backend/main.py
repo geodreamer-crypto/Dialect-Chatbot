@@ -24,8 +24,20 @@ app.add_middleware(
 import httpx
 from supabase import ClientOptions
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = (os.getenv("SUPABASE_URL") or "").strip()
+raw_supabase_key = (os.getenv("SUPABASE_KEY") or "").strip()
+
+# 환경변수에 줄바꿈이나 다른 키가 함께 붙여넣어진 경우 자동 분리 및 정제
+if "\n" in raw_supabase_key:
+    lines = [l.strip() for l in raw_supabase_key.splitlines() if l.strip()]
+    SUPABASE_KEY = lines[0] if lines else ""
+    for line in lines[1:]:
+        if "=" in line:
+            k, v = line.split("=", 1)
+            os.environ[k.strip()] = v.strip()
+else:
+    SUPABASE_KEY = raw_supabase_key
+
 custom_httpx = httpx.Client(http2=False, timeout=30.0)
 supabase: Client = create_client(
     SUPABASE_URL, 
