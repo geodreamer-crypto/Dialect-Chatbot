@@ -29,11 +29,11 @@ services:
 
   # ==========================================
   # 2. 프론트엔드 정적 호스팅 (React Vite)
+  # (정적 사이트는 글로벌 CDN으로 자동 배포되므로 region 미설정)
   # ==========================================
   - type: web
     name: jemini-frontend
     runtime: static
-    region: singapore
     rootDir: frontend
     buildCommand: "npm install && npm run build"
     staticPublishPath: "./dist"
