@@ -4,7 +4,7 @@ services:
   # ==========================================
   - type: web
     name: jemini-backend
-    env: python
+    runtime: python
     region: singapore
     plan: free
     rootDir: backend
@@ -29,16 +29,13 @@ services:
   # ==========================================
   # 2. 프론트엔드 정적 호스팅 (React Vite Static Site)
   # ==========================================
-  - type: static
+  - type: web
     name: jemini-frontend
+    runtime: static
     region: singapore
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
         value: https://jemini-backend.onrender.com/api
