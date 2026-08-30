@@ -3,11 +3,23 @@ from typing import List, Optional
 
 class IChatRepository(ABC):
     @abstractmethod
-    async def get_all_chats(self) -> List[dict]:
+    async def get_all_chats(self, user_id: Optional[str] = None) -> List[dict]:
+        """
+        사용자별 대화방 목록을 조회합니다. user_id가 없으면 빈 목록을 반환합니다.
+        """
         pass
 
     @abstractmethod
-    async def create_chat(self, title: str) -> dict:
+    async def create_chat(
+        self,
+        title: str,
+        user_id: Optional[str] = None,
+        initial_messages: Optional[List[dict]] = None
+    ) -> dict:
+        """
+        사용자의 새 대화방을 생성합니다.
+        게스트 세션에서 나눈 이전 대화(initial_messages)가 있으면 함께 DB에 저장합니다.
+        """
         pass
 
     @abstractmethod
@@ -49,3 +61,16 @@ class ILLMService(ABC):
         반환값: {"content": str, "suggested_questions": List[str]}
         """
         pass
+
+class IEncryptionService(ABC):
+    """
+    민감 대화 데이터(본문 및 제목)의 양방향 대칭키 암호화/복호화 인터페이스
+    """
+    @abstractmethod
+    def encrypt(self, plaintext: Optional[str]) -> Optional[str]:
+        pass
+
+    @abstractmethod
+    def decrypt(self, ciphertext: Optional[str]) -> Optional[str]:
+        pass
+

@@ -23,13 +23,14 @@ def get_process_chat_use_case(
     return ProcessChatUseCase(chat_repo, msg_repo, llm_service)
 
 @router.get("/history")
-async def get_history(chat_repo: IChatRepository = Depends(get_chat_repo)):
-    return await chat_repo.get_all_chats()
+async def get_history(user_id: str = None, chat_repo: IChatRepository = Depends(get_chat_repo)):
+    return await chat_repo.get_all_chats(user_id)
 
 @router.post("/chats")
 async def create_chat_endpoint(request: ChatCreateRequest, chat_repo: IChatRepository = Depends(get_chat_repo)):
     try:
-        return await chat_repo.create_chat(request.title)
+        initial_msgs = [m.model_dump() if hasattr(m, 'model_dump') else m.dict() if hasattr(m, 'dict') else m for m in request.initial_messages] if request.initial_messages else None
+        return await chat_repo.create_chat(request.title, request.user_id, initial_msgs)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -11,3 +11,4 @@ langchain-openai
 langchain-anthropic
 pytest
 pytest-asyncio
+cryptography

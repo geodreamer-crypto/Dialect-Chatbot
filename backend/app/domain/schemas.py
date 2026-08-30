@@ -18,8 +18,15 @@ class ChatRequest(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
 
+class ChatMessageItem(BaseModel):
+    role: str
+    content: str
+    region: Optional[str] = "경상도"
+
 class ChatCreateRequest(BaseModel):
     title: str
+    user_id: Optional[str] = None
+    initial_messages: Optional[List[ChatMessageItem]] = None
 
 class TTSRequest(BaseModel):
     text: str
@@ -28,6 +35,7 @@ class TTSRequest(BaseModel):
 class ChatResponse(BaseModel):
     id: int
     title: str
+    user_id: Optional[str] = None
     created_at: Optional[str] = None
 
 class MessageResponse(BaseModel):

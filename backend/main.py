@@ -6,6 +6,7 @@ from supabase import create_client, Client
 from app.presentation.routers.api import router, get_chat_repo, get_message_repo, get_llm_service
 from app.infrastructure.supabase_repo import SupabaseChatRepository, SupabaseMessageRepository
 from app.infrastructure.langchain_service import LangChainService
+from app.infrastructure.encryption_service import AES256GCMEncryptionService
 
 load_dotenv()
 
@@ -19,17 +20,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 1. 인프라 클라이언트 초기화
+# 1. 인프라 클라이언트 및 보안 서비스 초기화
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+CHAT_ENCRYPTION_KEY = os.getenv("CHAT_ENCRYPTION_KEY", "default_secret_key_32_bytes_len!")
+encryption_service = AES256GCMEncryptionService(CHAT_ENCRYPTION_KEY)
+
 DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "google_genai")
 DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gemini-3.6-flash")
 
-# 2. 구현체 초기화 (LangChain 기반 다중 벤더 지원 서비스)
-chat_repo = SupabaseChatRepository(supabase)
-msg_repo = SupabaseMessageRepository(supabase)
+# 2. 구현체 초기화 (암호화 서비스 및 LangChain 기반 LLM 서비스 주입)
+chat_repo = SupabaseChatRepository(supabase, encryption_service=encryption_service)
+msg_repo = SupabaseMessageRepository(supabase, encryption_service=encryption_service)
 llm_service = LangChainService(
     default_provider=DEFAULT_LLM_PROVIDER,
     default_model=DEFAULT_LLM_MODEL
