@@ -185,19 +185,9 @@ export const MainPage = () => {
           targetChatId = newChat.id;
           setCurrentChatId(targetChatId);
           setHistory(prev => [newChat, ...prev.filter(c => c.id !== newChat.id)]);
-        } else {
-          throw new Error("채팅방 생성 실패");
         }
       } catch (err) {
-        console.error("Failed to create chat:", err);
-        setMessages(prev => [...prev, { 
-          id: Date.now() + 1, 
-          role: 'bot', 
-          content: "⚠️ 채팅방을 생성하지 못했습니다. 백엔드 서버 연결을 확인해주세요.", 
-          region: selectedRegion 
-        }]);
-        setIsLoading(false);
-        return;
+        console.warn("대화방 생성 일시적 지연 (임시 세션으로 번역 진행):", err);
       }
     }
 

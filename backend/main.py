@@ -21,9 +21,17 @@ app.add_middleware(
 )
 
 # 1. 인프라 클라이언트 및 보안 서비스 초기화
+import httpx
+from supabase import ClientOptions
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+custom_httpx = httpx.Client(http2=False, timeout=30.0)
+supabase: Client = create_client(
+    SUPABASE_URL, 
+    SUPABASE_KEY,
+    options=ClientOptions(httpx_client=custom_httpx)
+)
 
 CHAT_ENCRYPTION_KEY = os.getenv("CHAT_ENCRYPTION_KEY", "default_secret_key_32_bytes_len!")
 encryption_service = AES256GCMEncryptionService(CHAT_ENCRYPTION_KEY)
