@@ -1,6 +1,7 @@
+version: "1"
 services:
   # ==========================================
-  # 1. 백엔드 서비스 (Python FastAPI Web Service)
+  # 1. 백엔드 웹 서비스 (Python FastAPI)
   # ==========================================
   - type: web
     name: jemini-backend
@@ -8,11 +9,11 @@ services:
     region: singapore
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.9
+        value: "3.11.9"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
@@ -22,24 +23,24 @@ services:
       - key: CHAT_ENCRYPTION_KEY
         sync: false
       - key: DEFAULT_LLM_PROVIDER
-        value: google_genai
+        value: "google_genai"
       - key: DEFAULT_LLM_MODEL
-        value: gemini-3.6-flash
+        value: "gemini-3.6-flash"
 
   # ==========================================
-  # 2. 프론트엔드 정적 호스팅 (React Vite Static Site)
+  # 2. 프론트엔드 정적 호스팅 (React Vite)
   # ==========================================
   - type: web
     name: jemini-frontend
     runtime: static
     region: singapore
     rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: "./dist"
     envVars:
       - key: VITE_API_URL
-        value: https://jemini-backend.onrender.com/api
+        value: "https://jemini-backend.onrender.com/api"
       - key: VITE_SUPABASE_URL
-        value: https://xuuqejnjtklxkvqfqrxr.supabase.co
+        value: "https://xuuqejnjtklxkvqfqrxr.supabase.co"
       - key: VITE_SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dXFlam5qdGtseGt2cWZxcnhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2Mjg2NzYsImV4cCI6MjEwMTIwNDY3Nn0.NdhDA6V2qnNYsk27RtwJByMCk82iT-gw9dhXl9uhRBA
+        value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1dXFlam5qdGtseGt2cWZxcnhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU2Mjg2NzYsImV4cCI6MjEwMTIwNDY3Nn0.NdhDA6V2qnNYsk27RtwJByMCk82iT-gw9dhXl9uhRBA"
